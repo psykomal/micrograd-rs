@@ -6,5 +6,7 @@ fn main() {
 
     let z = x + y;
 
-    println!("{:?}", z)
+    println!("{:?}", z);
+
+    z.backward();
 }
