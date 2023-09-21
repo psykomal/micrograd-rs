@@ -50,7 +50,7 @@ pub struct InnerValue {
     pub _op: Option<Op>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Value(Rc<RefCell<InnerValue>>);
 
 impl Value {
@@ -59,7 +59,7 @@ impl Value {
             data,
             grad: 0.0,
             _prev: _children,
-            _op: _op,
+            _op,
         })))
     }
 
@@ -117,6 +117,10 @@ impl Value {
 
     pub fn data(&self) -> f64 {
         self.0.borrow().data
+    }
+
+    pub fn set_data(&self, data: f64) {
+        self.0.borrow_mut().data = data;
     }
 
     pub fn grad(&self) -> f64 {
@@ -186,6 +190,23 @@ impl Value {
         for value in topo.iter().rev() {
             backward_prev(value);
         }
+    }
+}
+
+impl Debug for Value {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        Display::fmt(&self, f)
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        write!(
+            f,
+            "Value(data={:#?}, grad={:#?} )",
+            self.data(),
+            self.grad()
+        )
     }
 }
 
@@ -297,9 +318,57 @@ impl Neg for Value {
     }
 }
 
+impl Neg for &Value {
+    type Output = Value;
+    fn neg(self) -> Value {
+        self * -1.0
+    }
+}
+
+// x - y
 impl Sub for Value {
     type Output = Value;
     fn sub(self, other: Value) -> Value {
+        self + (-other)
+    }
+}
+
+// x - 1.0
+impl Sub<f64> for Value {
+    type Output = Value;
+    fn sub(self, other: f64) -> Value {
+        self + (-other)
+    }
+}
+
+// 1.0 - x
+impl Sub<Value> for f64 {
+    type Output = Value;
+    fn sub(self, other: Value) -> Value {
+        self + (-other)
+    }
+}
+
+// &x - &y
+impl Sub for &Value {
+    type Output = Value;
+    fn sub(self, other: &Value) -> Value {
+        self + &(-other)
+    }
+}
+
+// &x - 1.0
+impl Sub<f64> for &Value {
+    type Output = Value;
+    fn sub(self, other: f64) -> Value {
+        self + (-other)
+    }
+}
+
+// 1.0 - &x
+impl Sub<&Value> for f64 {
+    type Output = Value;
+    fn sub(self, other: &Value) -> Value {
         self + (-other)
     }
 }
