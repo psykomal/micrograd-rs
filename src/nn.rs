@@ -4,6 +4,10 @@ use rand::{distributions::Uniform, prelude::Distribution};
 
 use crate::engine::Value;
 
+pub trait ZeroGrad {
+    fn zero_grad(&self);
+}
+
 pub struct Neuron {
     weights: Vec<Value>,
     bias: Value,
@@ -92,5 +96,15 @@ impl MLP {
             .map(|l| l.parameters())
             .flatten()
             .collect()
+    }
+}
+
+impl ZeroGrad for MLP {
+    fn zero_grad(&self) {
+        let parameters = self.parameters();
+
+        for param in parameters {
+            param.set_grad(0.0);
+        }
     }
 }

@@ -1,7 +1,7 @@
 use std::iter::zip;
 
 use micrograd_rs::engine::{Op, Value};
-use micrograd_rs::nn::{Layer, Neuron, MLP};
+use micrograd_rs::nn::{Layer, Neuron, ZeroGrad, MLP};
 
 fn main() {
     let x = Value::new(1.0, vec![], None);
@@ -39,7 +39,7 @@ fn main() {
     let mlp = MLP::new(3, &[4, 4, 1]);
 
     let mut ypred: Vec<Value> = Vec::new();
-    for _ in 0..20 {
+    for _ in 0..100 {
         // Forward pass.
         ypred = Vec::new();
         for x in inputs.clone() {
@@ -50,8 +50,8 @@ fn main() {
             .map(|(ygt, yout)| (yout - ygt).pow(2.0))
             .fold(Value::new(0.0, vec![], None), |a, b| a + b);
 
-        // TODO: Backward pass. Don't forget to reset grads.
-        // mlp.zero_grad();
+        // Backward pass. Don't forget to reset grads.
+        mlp.zero_grad();
         loss.backward();
 
         // Update.

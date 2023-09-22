@@ -127,6 +127,10 @@ impl Value {
         self.0.borrow().grad
     }
 
+    pub fn set_grad(&self, grad: f64) {
+        self.0.borrow_mut().grad = grad;
+    }
+
     pub fn children(&self) -> Vec<Self> {
         self.0.borrow()._prev.clone()
     }
